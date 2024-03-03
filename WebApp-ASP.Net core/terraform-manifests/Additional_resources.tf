@@ -17,7 +17,7 @@ resource "azurerm_managed_disk" "data_disks" {
   }
 }
 
-# Attach the data disks to the Windows Server VM
+#! Attach the data disks to the Windows Server VM
 
 resource "azurerm_virtual_machine_data_disk_attachment" "disk_attach" {
   for_each = var.data_disks
