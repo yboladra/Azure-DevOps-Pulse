@@ -27,8 +27,6 @@ resource "azurerm_virtual_machine_data_disk_attachment" "disk_attach" {
   caching            = "ReadOnly"
 }
 
-
-
 # Create Boot Diagnostic Storage Account
 resource "azurerm_storage_account" "storage" {
   name = "${var.Application_name}${var.environment}stg01"
