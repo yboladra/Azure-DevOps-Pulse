@@ -15,6 +15,7 @@ resource "azurerm_subnet" "Subnet" {
   service_endpoints = ["Microsoft.Sql", "Microsoft.Storage"]
 }
 
+
 # Create the network interfaces for each VM
 resource "azurerm_network_interface" "nic_01" {
   
@@ -43,29 +44,33 @@ resource "azurerm_public_ip" "Public-ip" {
   #domain_name_label = "hrapp-${each.key}-${random_string.myrandom.id}"  
 }
 
-
-#- Create Newtork Security group
+# Create Network Security Group with dynamic security rules
+# Update the name attribute in azurerm_network_security_group resource
 resource "azurerm_network_security_group" "nsg" {
   name                = "${var.environment}-nsg-01"
   location            = azurerm_resource_group.HriyenRG.location
   resource_group_name = azurerm_resource_group.HriyenRG.name
+
   dynamic "security_rule" {
-    for_each = local.ports 
+    for_each = var.inbound_rules
+
     content {
-      name                       = "inbound-rule-${security_rule.key}"
-      #name                       = "inbound-rule-${security_rule.value}"
-      description                = "Inbound Rule ${security_rule.key}"    
-      priority                   = sum([100, security_rule.key])
+      name                       = "inbound-rule-${security_rule.value["name"]}"
+      description                = "Inbound Rule ${security_rule.value["name"]}"
+      priority                   = security_rule.value["priority"]
       direction                  = "Inbound"
       access                     = "Allow"
       protocol                   = "Tcp"
-      source_port_range          = security_rule.value
-      destination_port_range     = security_rule.value
+      source_port_range          = "*"
+      destination_port_range     = security_rule.value["port"]
       source_address_prefix      = "*"
-      destination_address_prefix = "*"      
-   }
- }
+      destination_address_prefix = "*"
+    }
+  }
 }
+
+
+
 # Associate Network Seccurity group with Subnet
 resource "azurerm_subnet_network_security_group_association" "Associate-nsg" {
   subnet_id = azurerm_subnet.Subnet.id
