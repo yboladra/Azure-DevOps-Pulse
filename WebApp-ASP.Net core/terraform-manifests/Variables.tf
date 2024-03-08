@@ -30,7 +30,7 @@ variable "virtual_network_name" {
 variable "Application_name" {
   description = "Application Name"
   type = string
-  default = "essence"
+  default = "infra"
   #type = set(string)
   #default = ["essence", "Infoware", "Shopify"]
 }
@@ -46,17 +46,31 @@ variable "VM_sku" {
   }
 }
 
-
-
-variable "NSG_rule_name" {
-  description = "List of Network Security Group name"
-  type = map
-  default = {
-    "3389" : "Allow_RDP"
-    "22"   : "Allow_SSH"
-    "80"   : "Allow_Internet"
-  }
+variable "inbound_rules" {
+  type    = list(map(any))
+  default = [
+    {
+      name     = "WebServer"
+      priority = 100
+      port     = 80
+    },
+    {
+      name     = "RDP"
+      priority = 110
+      port     = 3389
+    },
+    {
+      name     = "SSH"
+      priority = 120
+      port     = 22
+    },
+    # Add more rules as needed
+  ]
 }
+
+
+
+
 
 # Define the data disks you want to create
 variable "data_disks" {
