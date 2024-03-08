@@ -15,6 +15,9 @@ resource "azurerm_windows_virtual_machine" "VMs_01" {
   provision_vm_agent    = true
   license_type          = "Windows_Server"
   tags = var.common_tags
+  boot_diagnostics {
+   storage_account_uri = azurerm_storage_account.storage.primary_blob_endpoint
+  }
   os_disk {
     name                = "${each.key}-Osdisk"
     caching             = "ReadWrite"
