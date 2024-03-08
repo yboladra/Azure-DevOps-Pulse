@@ -17,7 +17,7 @@ resource "azurerm_managed_disk" "data_disks" {
   }
 }
 
-#! Attach the data disks to the Windows Server VM
+# Attach the data disks to the Windows Server VM
 
 resource "azurerm_virtual_machine_data_disk_attachment" "disk_attach" {
   for_each = var.data_disks
@@ -27,9 +27,11 @@ resource "azurerm_virtual_machine_data_disk_attachment" "disk_attach" {
   caching            = "ReadOnly"
 }
 
+
+
 # Create Boot Diagnostic Storage Account
 resource "azurerm_storage_account" "storage" {
-  name = "${var.Application_name}${var.environment}stg01"
+  name = "${var.Application_name}${var.environment}stg001"
   #location            = data.azurerm_resource_group.existing_rg.location
   #resource_group_name = data.azurerm_resource_group.existing_rg.name
    resource_group_name  = azurerm_resource_group.HriyenRG.name
@@ -51,4 +53,33 @@ resource "azurerm_log_analytics_workspace" "Workspace-01" {
     internet_query_enabled = "true"
     sku = "PerGB2018"
     retention_in_days = "30"
+}
+
+resource "azurerm_virtual_machine_extension" "windows_log_analytics_extension" {
+  for_each = var.VM_sku
+
+  virtual_machine_id     = azurerm_windows_virtual_machine.VMs_01[each.key].id
+  name                   = "LogAnalytics"
+  publisher              = "Microsoft.EnterpriseCloud.Monitoring"
+  type                   = "MicrosoftMonitoringAgent"
+  type_handler_version   = "1.0"
+  auto_upgrade_minor_version = true  # Add this line
+
+  protected_settings = <<PROTECTED_SETTINGS
+  {
+    "workspaceKey": "${azurerm_log_analytics_workspace.Workspace-01.primary_shared_key}"
+  }
+  PROTECTED_SETTINGS
+
+  settings = <<SETTINGS
+  {
+    "workspaceId": "${azurerm_log_analytics_workspace.Workspace-01.workspace_id}"
+  }
+  SETTINGS
+
+  tags = {
+    environment = var.environment
+    application = var.Application_name
+    sku         = each.value
+  }
 }
