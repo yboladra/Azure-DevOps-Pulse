@@ -7,7 +7,7 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 # Create Subnet
-resource "azurerm_subnet" "Subnet01" {
+resource "azurerm_subnet" "Subnet" {
   name                 = "CosDevSubnet"
   resource_group_name  = azurerm_resource_group.HriyenRG.name
   virtual_network_name = azurerm_virtual_network.vnet.name
